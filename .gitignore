@@ -9,4 +9,5 @@ build/
 *.wav
 tmp/
 output/
+data/
 .venv/
