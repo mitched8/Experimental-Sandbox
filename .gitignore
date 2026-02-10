@@ -9,6 +9,9 @@ build/
 *.wav
 tmp/
 output/
-data/
+data/*
+!data/podcast_transcripts/
+data/podcast_transcripts/*
+!data/podcast_transcripts/*.md
 .venv/
 .ipynb_checkpoints/
