@@ -11,3 +11,4 @@ tmp/
 output/
 data/
 .venv/
+.ipynb_checkpoints/
