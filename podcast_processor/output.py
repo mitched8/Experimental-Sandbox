@@ -11,14 +11,75 @@ from .transcription import TranscriptResult
 
 logger = logging.getLogger(__name__)
 
+# Default directory for podcast transcripts (under project data/)
+DEFAULT_TRANSCRIPT_OUTPUT_DIR = "data/podcast_transcripts"
+
+
+def save_transcript_markdown(
+    episode: EpisodeMetadata,
+    transcript: TranscriptResult,
+    output_dir: str = DEFAULT_TRANSCRIPT_OUTPUT_DIR,
+) -> Path:
+    """Save transcript-only markdown immediately after transcription.
+
+    Use this right after Step 3 so the transcript is persisted even if
+    speaker attribution or summary fails later. File is written to
+    output_dir with a safe filename from the episode title.
+    """
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    filename = _safe_filename(episode.title) + ".md"
+    filepath = output_path / filename
+    content = _build_transcript_only_markdown(episode, transcript)
+    filepath.write_text(content, encoding="utf-8")
+    logger.info("Saved transcript to %s", filepath)
+    return filepath
+
+
+def _build_transcript_only_markdown(
+    episode: EpisodeMetadata,
+    transcript: TranscriptResult,
+) -> str:
+    """Build markdown with frontmatter and full transcript only (no summary)."""
+    parts: list[str] = []
+    parts.append("---")
+    parts.append(f"title: \"{_escape_yaml(episode.title)}\"")
+    parts.append(f"date: \"{episode.published}\"")
+    if episode.author:
+        parts.append(f"author: \"{_escape_yaml(episode.author)}\"")
+    parts.append(f"audio_url: \"{episode.audio_url}\"")
+    parts.append(f"transcription_source: \"{transcript.source}\"")
+    parts.append(f"processed: \"{datetime.now().isoformat(timespec='seconds')}\"")
+    parts.append("tags:")
+    parts.append("  - podcast")
+    parts.append("  - transcript")
+    parts.append("---")
+    parts.append("")
+    parts.append(f"# {episode.title}")
+    parts.append("")
+    parts.append(f"> **Published:** {episode.published}")
+    if episode.author:
+        parts.append(f"> **Author:** {episode.author}")
+    parts.append("")
+    parts.append("## Full Transcript")
+    parts.append("")
+    if transcript.utterances:
+        for u in transcript.utterances:
+            parts.append(f"**{u.speaker}:** {u.text}")
+            parts.append("")
+    else:
+        parts.append(transcript.raw_text)
+        parts.append("")
+    return "\n".join(parts)
+
 
 def save_markdown(
     episode: EpisodeMetadata,
     transcript: TranscriptResult,
     summary: EpisodeSummary,
-    output_dir: str = "./output",
+    output_dir: str = DEFAULT_TRANSCRIPT_OUTPUT_DIR,
 ) -> Path:
-    """Save the processed episode as a markdown file with YAML frontmatter."""
+    """Save the full processed episode (summary + transcript) as markdown with YAML frontmatter."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 

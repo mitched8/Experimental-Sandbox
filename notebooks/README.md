@@ -7,6 +7,7 @@ These notebooks walk through the two main pipelines in **markets-briefing** (Exp
 - Python 3.11+
 - Dependencies installed from project root: `pip install -e .` (or `pip install -r` requirements from `pyproject.toml`)
 - Copy `.env.example` to `.env` and set the API keys you need (see below)
+- Optional: from project root run `./.venv/bin/pip install ipykernel` so the `.venv` appears in the notebook kernel list
 
 ## Notebooks
 
@@ -17,12 +18,12 @@ These notebooks walk through the two main pipelines in **markets-briefing** (Exp
 
 ## How to run
 
-1. **Start from project root** so imports work. In Jupyter/Lab, set the kernel’s working directory to the repo root (the folder that contains `podcast_processor/`, `polymarket_monitor/`, and `notebooks/`).  
-   Or from a terminal: `cd /path/to/Experimental-Sandbox` then `jupyter notebook notebooks/` (or `jupyter lab`).
+1. **Use the project .venv as the notebook kernel** so dotenv and other deps are available. In Jupyter/Lab, set the kernel’s working directory to the repo root (the folder that contains `podcast_processor/`, `polymarket_monitor/`, and `notebooks/`).  
+From terminal: `cd Experimental-Sandbox && .venv/bin/jupyter notebook notebooks/`.
 
-2. Run the **Setup** cell first in each notebook so `ROOT` and `sys.path` point to the project root and `.env` is loaded.
+2. Run the **Setup** cell first in each notebook (it finds project root and loads `.env`).
 
-3. Run cells in order. Steps that require API keys will either run (if keys are set) or use mocks/dry-run behaviour and print a short message.
+3. Run cells in order. With API keys in `.env`, you can test the full pipeline (Polymarket Claude classification; Podcast transcription + summary).
 
 ## API keys (.env)
 

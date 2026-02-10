@@ -45,13 +45,58 @@ def transcribe(audio_path: Path) -> TranscriptResult:
     )
 
 
+def transcribe_segments(
+    segment_paths: list[Path],
+    segment_duration_sec: int,
+) -> TranscriptResult:
+    """Transcribe multiple audio segments and merge into one TranscriptResult.
+
+    Each segment is sent to AssemblyAI separately (avoids long single-file timeouts).
+    Utterance timestamps are offset by segment index so the full transcript is continuous.
+    """
+    assemblyai_key = os.environ.get("ASSEMBLYAI_API_KEY")
+    if not assemblyai_key:
+        raise RuntimeError("ASSEMBLYAI_API_KEY required for segment transcription")
+
+    combined_utterances: list[Utterance] = []
+    combined_raw: list[str] = []
+    offset_ms = 0
+
+    for i, seg_path in enumerate(segment_paths):
+        logger.info("Transcribing segment %d/%d: %s", i + 1, len(segment_paths), seg_path.name)
+        result = _transcribe_assemblyai(seg_path, assemblyai_key)
+        for u in result.utterances:
+            combined_utterances.append(
+                Utterance(
+                    speaker=u.speaker,
+                    text=u.text,
+                    start_ms=u.start_ms + offset_ms,
+                    end_ms=u.end_ms + offset_ms,
+                )
+            )
+        if result.raw_text:
+            combined_raw.append(result.raw_text)
+        offset_ms += segment_duration_sec * 1000
+
+    return TranscriptResult(
+        utterances=combined_utterances,
+        raw_text=" ".join(combined_raw),
+        has_diarisation=True,
+        source="assemblyai",
+    )
+
+
 def _transcribe_assemblyai(audio_path: Path, api_key: str) -> TranscriptResult:
     """Transcribe with AssemblyAI including speaker diarisation."""
     import assemblyai as aai
 
     aai.settings.api_key = api_key
 
-    config = aai.TranscriptionConfig(speaker_labels=True)
+    # API requires speech_models: non-empty list of "universal-2" or "universal-3-pro"
+    config = aai.TranscriptionConfig(
+        speaker_labels=True,
+        speech_models=["universal-2"],
+    )
     transcriber = aai.Transcriber()
 
     logger.info("Submitting audio to AssemblyAI: %s", audio_path)

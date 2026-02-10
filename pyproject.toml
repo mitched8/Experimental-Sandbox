@@ -16,3 +16,7 @@ dependencies = [
 [project.scripts]
 podcast-processor = "podcast_processor.pipeline:main"
 polymarket-monitor = "run_polymarket:main"
+
+[tool.setuptools.packages.find]
+include = ["podcast_processor*", "polymarket_monitor*"]
+exclude = ["notebooks*"]
