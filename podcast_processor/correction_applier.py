@@ -87,9 +87,20 @@ def _apply_text_replacement(text: str, issue: ValidationIssue) -> str:
         logger.warning("Cannot apply correction — missing in_summary or correction text")
         return text
 
+    # Guard: if the correction is much longer than the original and the target
+    # is inside a markdown table row, skip to avoid breaking table formatting.
+    target_in_table = _is_in_table_row(text, issue.in_summary)
+    correction = issue.correction
+    if target_in_table and len(correction) > len(issue.in_summary) * 3:
+        logger.info(
+            "Skipping verbose correction in table row (%s): would break formatting",
+            issue.section,
+        )
+        return text
+
     # Try exact replacement first
     if issue.in_summary in text:
-        text = text.replace(issue.in_summary, issue.correction, 1)
+        text = text.replace(issue.in_summary, correction, 1)
         logger.debug("Applied %s correction in %s", issue.category, issue.section)
     else:
         # Try case-insensitive search
@@ -97,7 +108,7 @@ def _apply_text_replacement(text: str, issue: ValidationIssue) -> str:
         lower_target = issue.in_summary.lower()
         idx = lower_text.find(lower_target)
         if idx != -1:
-            text = text[:idx] + issue.correction + text[idx + len(issue.in_summary):]
+            text = text[:idx] + correction + text[idx + len(issue.in_summary):]
             logger.debug("Applied %s correction (case-insensitive) in %s", issue.category, issue.section)
         else:
             logger.warning(
@@ -106,6 +117,15 @@ def _apply_text_replacement(text: str, issue: ValidationIssue) -> str:
             )
 
     return text
+
+
+def _is_in_table_row(text: str, target: str) -> bool:
+    """Check if the target text appears inside a markdown table row."""
+    lower_target = target.lower()
+    for line in text.split("\n"):
+        if "|" in line and lower_target in line.lower():
+            return True
+    return False
 
 
 def _apply_missing_content(text: str, issue: ValidationIssue) -> str:

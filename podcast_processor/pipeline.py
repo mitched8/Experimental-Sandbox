@@ -348,19 +348,20 @@ def _parse_transcript_markdown(path: str) -> tuple[TranscriptResult, EpisodeMeta
         author=metadata.get("author"),
     )
 
-    # Extract utterances from transcript body
-    utterances: list[Utterance] = []
-    # Match **Speaker:** text pattern
-    for match in re.finditer(r"\*\*(.+?)\*\*:\s*(.+?)(?=\n\n\*\*|\n\n## |\Z)", text, re.DOTALL):
-        speaker = match.group(1).strip()
-        utt_text = match.group(2).strip()
-        utterances.append(Utterance(speaker=speaker, text=utt_text))
-
-    # Fallback: raw text after "## Full Transcript"
+    # Extract the transcript section only (after "## Full Transcript")
     raw_text = ""
     transcript_section = re.search(r"## Full Transcript\s*\n(.*)", text, re.DOTALL)
     if transcript_section:
         raw_text = transcript_section.group(1).strip()
+
+    # Extract utterances from the transcript section (not from summary/quotes above)
+    # Format is **Speaker Name:** text (colon is inside the bold markers)
+    utterances: list[Utterance] = []
+    search_text = raw_text if raw_text else text
+    for match in re.finditer(r"\*\*(.+?):\*\*\s*(.+?)(?=\n\n\*\*|\Z)", search_text, re.DOTALL):
+        speaker = match.group(1).strip()
+        utt_text = match.group(2).strip()
+        utterances.append(Utterance(speaker=speaker, text=utt_text))
 
     transcript = TranscriptResult(
         utterances=utterances,
