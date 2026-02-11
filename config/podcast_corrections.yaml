@@ -1,0 +1,56 @@
+jpm_at_any_rate:
+  speaker_corrections:
+    "Junior": "Junya"
+    "Bega": "Meera"
+    "Mira": "Meera"
+
+  proper_noun_corrections:
+    "DPIF": "GPIF"
+    "Dicks Bank": "Riksbank"
+    "DAREN": "dollar-yen"
+    "RHIAN": "dollar-yen"
+    "doish": "dovish"
+    "rectangle result": "election result"
+    "global health election": "general election"
+    "Lisa Kuts": "Lisa Cook"
+    "Dolly JPY": "dollar-yen"
+    "BAE": "BoE"
+    "LEP": "LDP"
+    "LBP": "LDP"
+
+  # Context-dependent corrections: applied only when near currency/FX terms
+  context_dependent_corrections:
+    "stocky": "krona"
+
+  fx_context_terms:
+    - "currency"
+    - "forex"
+    - "FX"
+    - "SEK"
+    - "NOK"
+    - "Sweden"
+    - "Norway"
+    - "Riksbank"
+    - "pair"
+    - "cross"
+    - "rate"
+
+  speaker_roster:
+    - name: "Meera Chandan"
+      role: "Co-head of FX Strategy, Host"
+      coverage: "Overall framework, APAC"
+    - name: "Ben Jarman"
+      role: "FX Strategist"
+      coverage: "AUD, NZD, APAC"
+    - name: "Junya"
+      role: "FX Strategist, Tokyo"
+      coverage: "JPY, Japan"
+    - name: "James"
+      role: "FX Strategist"
+      coverage: "GBP, SEK, European DM"
+    - name: "Aneshka"
+      role: "FX Strategist"
+      coverage: "EMFX"
+    - name: "Patrick"
+      role: "FX Strategist"
+      coverage: "USD, Fed, US data"

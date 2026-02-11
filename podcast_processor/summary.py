@@ -1,34 +1,36 @@
-"""Summary generation — produce a structured summary using Claude."""
+"""Pass 1: Summary generation — produce a structured summary with stance tracking using Claude Sonnet."""
 
 import logging
-from dataclasses import dataclass
 
 import anthropic
 
+from .config import PodcastCorrections, SummarisationConfig
+from .stance import format_stance_for_prompt
 from .transcription import TranscriptResult
 
 logger = logging.getLogger(__name__)
-
-MODEL = "claude-sonnet-4-20250514"
-
-
-@dataclass
-class EpisodeSummary:
-    summary: str            # 3-5 paragraph narrative summary
-    themes: list[str]       # key themes / topics
-    trade_recommendations: list[str]  # specific trade recs, positioning, forecasts
-    notable_quotes: list[str]
 
 
 def generate_summary(
     transcript: TranscriptResult,
     episode_title: str,
+    episode_date: str,
+    series_name: str,
     anthropic_api_key: str,
-) -> EpisodeSummary:
-    """Generate a structured summary of the podcast episode."""
+    stance: dict | None = None,
+    corrections: PodcastCorrections | None = None,
+    config: SummarisationConfig | None = None,
+) -> str:
+    """Generate a structured summary with What's Changed tracking (Pass 1).
+
+    Returns the raw markdown output from Claude for further validation.
+    """
+    if config is None:
+        config = SummarisationConfig()
+
     client = anthropic.Anthropic(api_key=anthropic_api_key)
 
-    # Build the full attributed transcript text
+    # Build attributed transcript text
     if transcript.utterances:
         transcript_text = "\n".join(
             f"{u.speaker}: {u.text}" for u in transcript.utterances
@@ -36,95 +38,132 @@ def generate_summary(
     else:
         transcript_text = transcript.raw_text
 
-    prompt = f"""You are analysing a podcast episode titled "{episode_title}".
+    # Build speaker roster section
+    roster_section = ""
+    if corrections and corrections.speaker_roster:
+        roster_lines = ["Known speakers for this series:"]
+        for s in corrections.speaker_roster:
+            roster_lines.append(f"- {s.name} ({s.role}) — covers: {s.coverage}")
+        roster_section = "\n".join(roster_lines)
 
-Here is the full transcript:
+    # Build stance context
+    stance_section = ""
+    if stance:
+        stance_yaml = format_stance_for_prompt(stance)
+        stance_section = f"""
+The following is the current known stance file for this podcast series.
+Compare the views expressed in this episode against these existing views to populate the "What's Changed" section.
+
+<current_stance>
+{stance_yaml}
+</current_stance>
+"""
+    else:
+        stance_section = """
+No existing stance file exists for this series. This is the first episode being processed.
+Treat all views as NEW (🆕) in the "What's Changed" section.
+"""
+
+    system_prompt = f"""You are a senior FX strategist summarising a podcast episode for a trading desk.
+Your audience already knows markets — do not explain basic concepts. Be precise with levels, pairs, and timeframes.
+
+{roster_section}
+
+{stance_section}
+
+Critical rules:
+- NEVER include the full transcript in the output
+- NEVER reproduce garbled or clearly erroneous transcription text — paraphrase instead
+- Use standard market convention for currency pairs and levels (e.g. USD/JPY not dollar-yen)
+- Distinguish base case views from risk scenarios
+- Distinguish event-driven updates from structural macro shifts
+- For the What's Changed table, be specific with numbers and levels, not just "more bullish"
+"""
+
+    user_prompt = f"""Analyse this podcast episode and produce a structured summary.
+
+Episode: "{episode_title}"
+Date: {episode_date}
+Series: {series_name}
 
 <transcript>
 {transcript_text}
 </transcript>
 
-Please produce a structured analysis with the following sections. Return your response in EXACTLY this format with these section headers:
+Produce output in EXACTLY this format:
+
+---
+title: "{episode_title}"
+date: "{episode_date}"
+source: "{series_name}"
+series: "{series_name}"
+tags:
+  - podcast
+  - fx-strategy
+---
+
+## What's Changed
+
+| Currency/Theme | Change | Detail |
+|---|---|---|
+Use these categories:
+- 🔼/🔽 Conviction change (target moved, conviction upgraded/downgraded)
+- 🔄 Narrative shift (same direction, different reasoning)
+- 🆕 New theme (not previously discussed)
+- ⚠️ View reversal (direction flipped)
+- ➡️ Unchanged (explicitly reaffirmed)
+- 🗑️ Dropped (previously discussed, now absent)
+
+Lead with changes before continuations. Be specific with numbers/levels.
+
+## Trade Recommendations
+
+| Pair | Direction | Target | Timeframe | Notes |
+|---|---|---|---|---|
+
+Include all explicit trade recommendations and positioning calls mentioned.
 
 ## Summary
-Write a concise summary of the episode in 3-5 paragraphs. Cover the main discussion points and conclusions.
 
-## Key Themes
-List the key themes and topics discussed, one per line, prefixed with "- ".
-
-## Trade Recommendations & Market Views
-List any specific trade recommendations, positioning views, currency forecasts, or market calls mentioned. One per line, prefixed with "- ". If none were discussed, write "- None explicitly mentioned".
+3-5 paragraphs of prose for someone who already knows markets. Cover the main themes, reasoning, and conclusions.
 
 ## Notable Quotes
-List 3-5 notable or insightful direct quotes from the episode, one per line, prefixed with "- " and wrapped in quotation marks. Include the speaker's name.
 
-Return ONLY the structured analysis, no other commentary."""
+2-4 maximum. Only include quotes where the transcription quality is clearly high. Format as:
+> "Quote text" — Speaker Name
 
-    logger.info("Generating episode summary with Claude")
+## Desk Relevance (FX Options)
+
+3-6 bullets on implications for an FX options desk:
+- Vol surface implications (skew, term structure)
+- Expected flow and positioning
+- Structures worth considering
+- Event risk and binary outcomes
+- Any explicit vol or options commentary from the podcast
+
+## Stance Updates
+
+```yaml
+macro_framework:
+  # key: view updates
+currency_views:
+  # CCY:
+  #   direction: bullish/bearish/neutral
+  #   target: "level or range"
+  #   conviction: high/medium/low
+  #   narrative: "brief reasoning"
+```
+
+Populate the stance updates YAML with all views expressed in this episode. Use the currency ISO codes as keys."""
+
+    logger.info("Pass 1: Generating summary with %s", config.pass1_model)
     response = client.messages.create(
-        model=MODEL,
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
+        model=config.pass1_model,
+        max_tokens=config.max_tokens_pass1,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_prompt}],
     )
 
-    return _parse_summary(response.content[0].text)
-
-
-def _parse_summary(text: str) -> EpisodeSummary:
-    """Parse Claude's structured summary response into an EpisodeSummary."""
-    sections = {"summary": "", "themes": [], "trade_recommendations": [], "notable_quotes": []}
-
-    current_section = None
-    current_lines: list[str] = []
-
-    for line in text.split("\n"):
-        stripped = line.strip()
-        lower = stripped.lower()
-
-        if lower.startswith("## summary"):
-            _flush_section(sections, current_section, current_lines)
-            current_section = "summary"
-            current_lines = []
-        elif lower.startswith("## key themes"):
-            _flush_section(sections, current_section, current_lines)
-            current_section = "themes"
-            current_lines = []
-        elif lower.startswith("## trade") or lower.startswith("## market"):
-            _flush_section(sections, current_section, current_lines)
-            current_section = "trade_recommendations"
-            current_lines = []
-        elif lower.startswith("## notable"):
-            _flush_section(sections, current_section, current_lines)
-            current_section = "notable_quotes"
-            current_lines = []
-        else:
-            current_lines.append(line)
-
-    _flush_section(sections, current_section, current_lines)
-
-    return EpisodeSummary(
-        summary=sections["summary"],
-        themes=sections["themes"],
-        trade_recommendations=sections["trade_recommendations"],
-        notable_quotes=sections["notable_quotes"],
-    )
-
-
-def _flush_section(
-    sections: dict, section_name: str | None, lines: list[str]
-) -> None:
-    """Flush accumulated lines into the appropriate section."""
-    if section_name is None:
-        return
-
-    if section_name == "summary":
-        sections["summary"] = "\n".join(lines).strip()
-    else:
-        items = []
-        for line in lines:
-            stripped = line.strip()
-            if stripped.startswith("- "):
-                items.append(stripped[2:].strip())
-            elif stripped.startswith("* "):
-                items.append(stripped[2:].strip())
-        sections[section_name] = items
+    result = response.content[0].text
+    logger.info("Pass 1 complete: %d characters", len(result))
+    return result

@@ -13,5 +13,12 @@ data/*
 !data/podcast_transcripts/
 data/podcast_transcripts/*
 !data/podcast_transcripts/*.md
+!data/stances/
+data/stances/*
+!data/stances/*.yaml
 .venv/
 .ipynb_checkpoints/
+results/*
+!results/*.md
+results/transcripts/*
+!results/transcripts/*.md

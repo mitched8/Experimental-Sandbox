@@ -1,0 +1,25 @@
+transcription:
+  provider: assemblyai  # or whisper
+  whisper_model: whisper-1
+  assemblyai_speaker_diarization: true
+
+summarisation:
+  pass1_model: claude-sonnet-4-20250514
+  pass2_model: claude-haiku-4-5-20251001
+  max_tokens_pass1: 4096
+  max_tokens_pass2: 2048
+
+output:
+  summary_dir: results/
+  transcript_dir: results/transcripts/
+  stance_dir: data/stances/
+
+podcasts:
+  jpm_at_any_rate:
+    feed_url: "https://feed.podbean.com/atanyrate/feed.xml"
+    corrections_file: config/podcast_corrections.yaml
+    stance_file: data/stances/jpm_at_any_rate.yaml
+    keywords_filter:
+      - "FX"
+      - "currency"
+      - "forex"
