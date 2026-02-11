@@ -20,5 +20,6 @@ data/stances/*
 .ipynb_checkpoints/
 results/*
 !results/*.md
+!results/transcripts/
 results/transcripts/*
 !results/transcripts/*.md
