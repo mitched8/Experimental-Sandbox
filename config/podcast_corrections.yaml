@@ -1,56 +1,57 @@
 jpm_at_any_rate:
   speaker_corrections:
-    "Junior": "Junya"
-    "Bega": "Meera"
-    "Mira": "Meera"
-
+    Junior: Junya
+    Bega: Meera
+    Mira: Meera
   proper_noun_corrections:
-    "DPIF": "GPIF"
-    "Dicks Bank": "Riksbank"
-    "DAREN": "dollar-yen"
-    "RHIAN": "dollar-yen"
-    "doish": "dovish"
-    "rectangle result": "election result"
-    "global health election": "general election"
-    "Lisa Kuts": "Lisa Cook"
-    "Dolly JPY": "dollar-yen"
-    "BAE": "BoE"
-    "LEP": "LDP"
-    "LBP": "LDP"
-
-  # Context-dependent corrections: applied only when near currency/FX terms
+    DPIF: GPIF
+    Dicks Bank: Riksbank
+    DAREN: dollar-yen
+    RHIAN: dollar-yen
+    doish: dovish
+    rectangle result: election result
+    global health election: general election
+    Lisa Kuts: Lisa Cook
+    Dolly JPY: dollar-yen
+    BAE: BoE
+    LEP: LDP
+    LBP: LDP
+    The summary presents the JPY view as "bearish" with target "162 intervention risk: The
+      summary conflates intervention risk level (162) with a currency target. The
+      medium-term JPY view is bearish, but 162 is identified as an intervention trigger
+      point, not a target. The narrative should clarify that while intervention may
+      cap weakness at 162, medium-term JPY weakness is expected to resume after any
+      intervention-driven dips.
   context_dependent_corrections:
-    "stocky": "krona"
-
+    stocky: krona
   fx_context_terms:
-    - "currency"
-    - "forex"
-    - "FX"
-    - "SEK"
-    - "NOK"
-    - "Sweden"
-    - "Norway"
-    - "Riksbank"
-    - "pair"
-    - "cross"
-    - "rate"
-
+  - currency
+  - forex
+  - FX
+  - SEK
+  - NOK
+  - Sweden
+  - Norway
+  - Riksbank
+  - pair
+  - cross
+  - rate
   speaker_roster:
-    - name: "Meera Chandan"
-      role: "Co-head of FX Strategy, Host"
-      coverage: "Overall framework, APAC"
-    - name: "Ben Jarman"
-      role: "FX Strategist"
-      coverage: "AUD, NZD, APAC"
-    - name: "Junya"
-      role: "FX Strategist, Tokyo"
-      coverage: "JPY, Japan"
-    - name: "James"
-      role: "FX Strategist"
-      coverage: "GBP, SEK, European DM"
-    - name: "Aneshka"
-      role: "FX Strategist"
-      coverage: "EMFX"
-    - name: "Patrick"
-      role: "FX Strategist"
-      coverage: "USD, Fed, US data"
+  - name: Meera Chandan
+    role: Co-head of FX Strategy, Host
+    coverage: Overall framework, APAC
+  - name: Ben Jarman
+    role: FX Strategist
+    coverage: AUD, NZD, APAC
+  - name: Junya
+    role: FX Strategist, Tokyo
+    coverage: JPY, Japan
+  - name: James
+    role: FX Strategist
+    coverage: GBP, SEK, European DM
+  - name: Aneshka
+    role: FX Strategist
+    coverage: EMFX
+  - name: Patrick
+    role: FX Strategist
+    coverage: USD, Fed, US data

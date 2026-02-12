@@ -1,43 +1,52 @@
-last_updated: '2026-02-11'
-source_episode: 'Global FX: RBA, JP elections, euro/APAC rotation, dovish BoE, US
-  data'
+last_updated: '2026-02-12'
+source_episode: 'FX & Metals: Dollar and Metals Outlook'
 macro_framework:
   global_growth:
     view: pro-cyclical environment continues
     since: '2026-02-11'
   usd_outlook:
-    view: strategic bearish view maintained
-    since: '2026-02-11'
+    view: strategic bearish maintained, recent acceleration normal in pro-cyclical
+      environment
+    since: '2026-01-30'
   regional_rotation:
     view: APAC catching up to eurozone currencies
     since: '2026-02-11'
   risk_sentiment:
     view: deleveraging phase but fundamentals supportive
     since: '2026-02-11'
+  political_risk:
+    view: elevated through Q1 2026, Fed independence and Japan election key drivers
+    since: '2026-01-16'
+  metals_outlook:
+    view: structural gold bullishness, silver vulnerable to correction, copper supply
+      constraints
+    since: '2026-01-30'
+  asia_policy:
+    view: coordinated policy support emerging across North Asia
+    since: '2026-01-30'
 currency_views:
   AUD:
     direction: bullish
     target: low 70s mid-year
     conviction: high
-    narrative: positive rate spreads vs USD, RBA hiking cycle, commodity beta
-    last_changed: '2026-02-11'
-    change_type: new
+    narrative: commodity beta key driver, models show 1% upside potential, positive
+      rate spreads supportive
     since: '2026-02-11'
   NZD:
     direction: bullish
     target: low 60s
-    conviction: medium
-    narrative: activity recovery intact despite employment data, rates repricing
-    last_changed: '2026-02-11'
-    change_type: new
+    conviction: high
+    narrative: RBNZ hiking cycle brought forward to Q3 2026, 100bp total tightening
+      forecast, recovery established
     since: '2026-02-11'
   JPY:
     direction: bearish
-    target: 164 medium-term
+    target: 164
     conviction: medium
-    narrative: election outcome doesn't change structural bearish view
-    last_changed: '2026-02-11'
-    change_type: new
+    narrative: intervention risk 159-160 level, coordinated intervention only above
+      162, mid-term bearish intact
+    last_changed: '2026-02-12'
+    change_type: target_update
     since: '2026-02-11'
   GBP:
     direction: bullish
@@ -57,9 +66,16 @@ currency_views:
     since: '2026-02-11'
   USD:
     direction: bearish
-    target: broad decline
+    target: broad decline expected
     conviction: medium
-    narrative: Warsh nomination doesn't change strategic view, limited easing capacity
-    last_changed: '2026-02-11'
-    change_type: new
+    narrative: pro-cyclical backdrop intact, fair on some metrics but undershooting
+      rates models typical in growth environment
     since: '2026-02-11'
+  CNY:
+    direction: bullish
+    target: continued controlled strength
+    conviction: medium
+    narrative: PBOC fixings accelerating lower, moderately strong RMB guidance maintained
+    last_changed: '2026-02-12'
+    change_type: target_update
+    since: '2026-02-12'
